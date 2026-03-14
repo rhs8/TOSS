@@ -1,0 +1,26 @@
+<%- include('partials/head') %>
+<%- include('partials/header', { active: 'browse' }) %>
+<main>
+  <h1>Browse</h1>
+  <p style="opacity: 0.8; margin-bottom: 1.5rem;">Items you can request once you've listed something. One exchange per week.</p>
+  <% if (!listings || listings.length === 0) { %>
+    <div class="card" style="text-align: center; padding: 3rem;">
+      <p>No items listed yet. Be the first to post something.</p>
+      <a href="/post" class="btn-primary" style="margin-top: 1rem;">Post an item</a>
+    </div>
+  <% } else { %>
+    <ul class="listing-grid">
+      <% listings.forEach(function(l) { %>
+        <li>
+          <a href="/listing/<%= l.id %>" class="card">
+            <div class="thumb"></div>
+            <h2><%= l.title %></h2>
+            <% if (l.category) { %><span class="category"><%= l.category %></span><% } %>
+            <% if (l.owner_name) { %><p class="owner">by <%= l.owner_name %></p><% } %>
+          </a>
+        </li>
+      <% }); %>
+    </ul>
+  <% } %>
+</main>
+<%- include('partials/footer') %>

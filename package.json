@@ -1,0 +1,12 @@
+{
+  "name": "toss",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "start": "cd backend && npm run dev",
+    "start:api": "cd backend && npm run dev",
+    "start:web": "cd web && npm run dev",
+    "build:api": "cd backend && npm run build",
+    "build:web": "cd web && npm run build"
+  }
+}
