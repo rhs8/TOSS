@@ -11,6 +11,7 @@ export default function PostItem() {
   const [description, setDescription] = useState("");
   const [categoryId, setCategoryId] = useState("");
   const [neighbourhood, setNeighbourhood] = useState("");
+  const [seasonalCollection, setSeasonalCollection] = useState("");
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
@@ -39,8 +40,9 @@ export default function PostItem() {
         description: description.trim() || undefined,
         category_id: categoryId,
         neighbourhood: neighbourhood.trim() || undefined,
+        seasonal_collection: seasonalCollection || undefined,
       });
-      navigate("/browse");
+      navigate("/my-postings");
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Failed to post.");
     } finally {
@@ -51,28 +53,37 @@ export default function PostItem() {
   return (
     <div className="container">
       <h1>Post an item</h1>
-      <p style={{ opacity: 0.8 }}>New items go through a quick review before going live. Add a photo URL if you have one.</p>
+      <p className="page-intro">The quality of each item is evaluated and confirmed before it goes live.</p>
       <form onSubmit={handleSubmit} className="card" style={{ maxWidth: 480 }}>
-        {error && <p style={{ color: "var(--toss-rust)" }}>{error}</p>}
-        <div style={{ marginBottom: "1rem" }}>
-          <label>Title *</label>
-          <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} required placeholder="e.g. Electric sander" />
+        {error && <p className="error-msg">{error}</p>}
+        <div className="form-group">
+          <label htmlFor="post-title">Title *</label>
+          <input id="post-title" type="text" value={title} onChange={(e) => setTitle(e.target.value)} required placeholder="e.g. Electric sander" />
         </div>
-        <div style={{ marginBottom: "1rem" }}>
-          <label>Category *</label>
-          <select value={categoryId} onChange={(e) => setCategoryId(e.target.value)} required style={{ width: "100%", padding: "0.5rem" }}>
+        <div className="form-group">
+          <label htmlFor="post-category">Category *</label>
+          <select id="post-category" value={categoryId} onChange={(e) => setCategoryId(e.target.value)} required style={{ width: "100%", padding: "0.5rem" }}>
             {categories.map((c) => (
               <option key={c.id} value={c.id}>{c.name}</option>
             ))}
           </select>
         </div>
-        <div style={{ marginBottom: "1rem" }}>
-          <label>Description</label>
-          <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={3} placeholder="Condition, how to use..." />
+        <div className="form-group">
+          <label htmlFor="post-desc">Description</label>
+          <textarea id="post-desc" value={description} onChange={(e) => setDescription(e.target.value)} rows={3} placeholder="Condition, how to use..." />
         </div>
-        <div style={{ marginBottom: "1rem" }}>
-          <label>Neighbourhood (optional)</label>
-          <input type="text" value={neighbourhood} onChange={(e) => setNeighbourhood(e.target.value)} placeholder="e.g. Burnaby" />
+        <div className="form-group">
+          <label htmlFor="post-neighbourhood">Neighbourhood (optional)</label>
+          <input id="post-neighbourhood" type="text" value={neighbourhood} onChange={(e) => setNeighbourhood(e.target.value)} placeholder="e.g. Burnaby, SFU Burnaby Campus" />
+        </div>
+        <div className="form-group">
+          <label htmlFor="post-seasonal">Seasonal collection (optional)</label>
+          <select id="post-seasonal" value={seasonalCollection} onChange={(e) => setSeasonalCollection(e.target.value)} style={{ width: "100%", padding: "0.5rem" }}>
+            <option value="">None</option>
+            <option value="halloween">Halloween costumes</option>
+            <option value="moving">Moving boxes</option>
+            <option value="holiday">Holiday decorations</option>
+          </select>
         </div>
         <button type="submit" disabled={submitting}>{submitting ? "Posting…" : "Post item"}</button>
       </form>

@@ -1,11 +1,10 @@
 import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import { useAuth } from "../auth";
 import { api } from "../api";
 
 export default function ItemDetail() {
   const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
   const { token, user } = useAuth();
   const [data, setData] = useState<{
     item: { id: string; title: string; description?: string; category_name: string; owner_name: string; owner_id: string; status: string; neighbourhood?: string };
@@ -32,35 +31,49 @@ export default function ItemDetail() {
     }
   }
 
-  if (error && !data) return <div className="container"><p style={{ color: "var(--toss-rust)" }}>{error}</p></div>;
+  if (error && !data) return <div className="container"><p className="error-msg">{error}</p><Link to="/browse">Back to Browse</Link></div>;
   if (!data) return <div className="container">Loading…</div>;
 
   const { item, biography } = data;
-  const canRequest = token && user && item.owner_id !== user.id && item.status === "live";
+  const isOwn = user && item.owner_id === user.id;
+  const isLive = item.status === "live";
+  const canRequest = token && user && !isOwn && isLive;
 
   return (
     <div className="container">
+      <p style={{ marginBottom: "1rem" }}><Link to="/browse">← Back to Browse</Link></p>
       <div className="card">
-        <div style={{ aspectRatio: "16/10", background: "rgba(143,188,143,0.2)", borderRadius: "0.5rem", marginBottom: "1rem" }} />
-        <h1 style={{ fontSize: "1.5rem", color: "var(--toss-green)" }}>{item.title}</h1>
-        <p style={{ margin: "0.25rem 0", fontSize: "0.875rem", opacity: 0.8 }}>{item.category_name} · {item.owner_name}</p>
-        {item.neighbourhood && <p style={{ margin: 0, fontSize: "0.875rem", opacity: 0.7 }}>{item.neighbourhood}</p>}
+        <div className="item-image" />
+        <h1 style={{ fontSize: "1.5rem", color: "var(--toss-green)", margin: "0 0 0.25rem" }}>{item.title}</h1>
+        <p className="item-meta">{item.category_name} · {item.owner_name}</p>
+        {item.neighbourhood && <p className="item-meta" style={{ margin: 0 }}>{item.neighbourhood}</p>}
         {item.description && <p style={{ marginTop: "0.75rem" }}>{item.description}</p>}
-        <p style={{ marginTop: "0.5rem", fontSize: "0.875rem" }}>Status: {item.status}</p>
+        <p style={{ marginTop: "0.5rem", fontSize: "0.875rem", opacity: 0.85 }}>Status: {item.status}</p>
         {canRequest && (
           <div style={{ marginTop: "1rem" }}>
+            <p style={{ fontSize: "0.875rem", opacity: 0.85, marginBottom: "0.75rem" }}>
+              After you request, you and the current holder will connect. Exchanges happen at a public space, or you can use our delivery option if available.
+            </p>
             <button onClick={handleRequest} disabled={requesting}>
               {requesting ? "Requesting…" : "Request this item"}
             </button>
           </div>
         )}
+        {!token && isLive && !isOwn && (
+          <div style={{ marginTop: "1rem" }}>
+            <p style={{ fontSize: "0.875rem", opacity: 0.85, marginBottom: "0.75rem" }}>
+              Sign in to request this item. To have it passed along to you, post something first — you can have as many items passed along as you’ve posted.
+            </p>
+            <Link to="/account" className="btn">Sign in to request</Link>
+          </div>
+        )}
       </div>
       <div className="card" style={{ marginTop: "1.5rem" }}>
-        <h2 style={{ fontSize: "1rem", color: "var(--toss-green)" }}>Item biography</h2>
-        <p style={{ fontSize: "0.875rem", opacity: 0.8 }}>Everyone who has held this item.</p>
-        <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
+        <h2 className="section-heading">Item biography</h2>
+        <p style={{ fontSize: "0.875rem", opacity: 0.8, margin: "0 0 0.75rem" }}>Everyone who has held this item — builds trust and backstory.</p>
+        <ul className="bio-list">
           {biography.map((h, i) => (
-            <li key={i} style={{ padding: "0.5rem 0", borderBottom: "1px solid rgba(143,188,143,0.3)" }}>
+            <li key={i}>
               <strong>{h.display_name || "Anonymous"}</strong>
               {" "}received {new Date(h.received_at).toLocaleDateString()}
               {h.passed_on_at ? ` · passed on ${new Date(h.passed_on_at).toLocaleDateString()}` : " · current holder"}

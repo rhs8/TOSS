@@ -1,0 +1,15 @@
+# Local PostgreSQL for backend (matches .env DATABASE_URL)
+services:
+  postgres:
+    image: postgres:16-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: toss
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata: {}

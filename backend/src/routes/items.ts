@@ -1,34 +1,29 @@
 import { Router } from "express";
 import { query, queryOne } from "../db";
-import { requireAuth, type AuthRequest } from "../auth";
-import { canBrowse, canRequestItem, isAccessAllowed, isCommitmentValid } from "../rules";
+import { optionalAuth, requireAuth, type AuthRequest } from "../auth";
+import { canRequestItem, hasMinPostThisMonth, isAccessAllowed, isCommitmentValid } from "../rules";
 import type { Item, Circulation } from "../types";
 
 const router = Router();
 
-/** List items (browse). Requires post count > 0. */
-router.get("/", requireAuth, async (req: AuthRequest, res) => {
-  const user = req.user!;
-  const check = isAccessAllowed(user);
-  if (!check.allowed) return res.status(403).json({ error: check.reason });
-  const browse = await canBrowse(user.id);
-  if (!browse.allowed) return res.status(403).json({ error: browse.reason });
-
+/** List items (browse). Public — no auth required. Optional: category, neighbourhood, seasonal. When signed in, filter by user's circles. */
+router.get("/", optionalAuth, async (req: AuthRequest, res) => {
+  const user = req.user;
   const category = req.query.category as string | undefined;
   const neighbourhood = req.query.neighbourhood as string | undefined;
   const seasonal = req.query.seasonal as string | undefined;
 
   let sql = `
-    SELECT i.*, c.name AS category_name, u.display_name AS owner_name
+    SELECT i.*, cat.name AS category_name, u.display_name AS owner_name
     FROM items i
-    JOIN categories c ON c.id = i.category_id
+    JOIN categories cat ON cat.id = i.category_id
     JOIN users u ON u.id = i.owner_id
     WHERE i.status = 'live'
   `;
-  const params: string[] = [];
+  const params: unknown[] = [];
   let n = 1;
   if (category) {
-    sql += ` AND c.slug = $${n}`;
+    sql += ` AND cat.slug = $${n}`;
     params.push(category);
     n++;
   }
@@ -40,10 +35,37 @@ router.get("/", requireAuth, async (req: AuthRequest, res) => {
   if (seasonal) {
     sql += ` AND i.seasonal_collection = $${n}`;
     params.push(seasonal);
+    n++;
+  }
+  if (user) {
+    const check = isAccessAllowed(user);
+    if (!check.allowed) return res.status(403).json({ error: check.reason });
+    const userCircles = await query<{ circle_id: string }>("SELECT circle_id FROM user_circles WHERE user_id = $1", [user.id]);
+    if (userCircles.length > 0) {
+      sql += ` AND (i.circle_id IS NULL OR i.circle_id IN (${userCircles.map((_, i) => `$${n + i}`).join(",")}))`;
+      userCircles.forEach((c) => params.push(c.circle_id));
+      n += userCircles.length;
+    }
+  } else {
+    /* Not signed in: show all live items so anyone can browse. */
   }
   sql += " ORDER BY i.created_at DESC";
 
   const items = await query(sql, params);
+  res.json({ items });
+});
+
+/** List current user's items (my postings). */
+router.get("/mine", requireAuth, async (req: AuthRequest, res) => {
+  const user = req.user!;
+  const items = await query(
+    `SELECT i.*, cat.name AS category_name
+     FROM items i
+     JOIN categories cat ON cat.id = i.category_id
+     WHERE i.owner_id = $1
+     ORDER BY i.created_at DESC`,
+    [user.id]
+  );
   res.json({ items });
 });
 
@@ -83,8 +105,12 @@ router.post("/", requireAuth, async (req: AuthRequest, res) => {
     return res.status(400).json({ error: "Title and category required." });
   }
 
-  // TODO: Call Gemini API for content moderation; set status = 'live' or reject
-  const status = process.env.SKIP_MODERATION === "1" ? "live" : "pending_review";
+  // In development or when SKIP_MODERATION is set, new items go live immediately so they show in Browse.
+  const skipMod = process.env.SKIP_MODERATION?.toLowerCase();
+  const status =
+    process.env.NODE_ENV === "development" || skipMod === "1" || skipMod === "true"
+      ? "live"
+      : "pending_review";
 
   const rows = await query<Item>(
     `INSERT INTO items (owner_id, category_id, title, description, photo_url, neighbourhood, lat, lng, seasonal_collection, status)
@@ -118,6 +144,8 @@ router.post("/:id/request", requireAuth, async (req: AuthRequest, res) => {
   if (!check.allowed) return res.status(403).json({ error: check.reason });
   const canReq = await canRequestItem(user.id);
   if (!canReq.allowed) return res.status(403).json({ error: canReq.reason });
+  const minPost = await hasMinPostThisMonth(user.id);
+  if (!minPost.ok) return res.status(403).json({ error: minPost.reason });
 
   const item = await queryOne<Item>("SELECT * FROM items WHERE id = $1", [req.params.id]);
   if (!item) return res.status(404).json({ error: "Item not found." });

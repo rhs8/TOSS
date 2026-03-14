@@ -1,49 +1,54 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../auth";
 
 export default function SignIn() {
   const navigate = useNavigate();
-  const { setToken } = useAuth();
+  const location = useLocation();
+  const { setToken, refreshUser } = useAuth();
+  const from = (location.state as { from?: { pathname: string } })?.from?.pathname;
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  // Placeholder: real sign-in with Firebase Auth
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
     if (!email.trim()) {
       setError("Email required.");
       return;
     }
-    const domain = email.split("@")[1]?.toLowerCase();
-    if (!domain || !["sfu.ca", "ubc.ca"].includes(domain)) {
-      setError("Use an institution email (e.g. @sfu.ca).");
-      return;
-    }
-    const devToken = "dev-" + email.replace(/[^a-z0-9]/gi, "").slice(0, 20);
+    setLoading(true);
+    const devToken = "dev-" + email.replace(/[^a-z0-9]/gi, "").slice(0, 24);
     setToken(devToken);
-    navigate("/browse");
+    const ok = await refreshUser(devToken);
+    if (ok) navigate(from || "/browse", { replace: true });
+    else setError("No account with this email. Sign up first.");
+    setLoading(false);
   }
 
   return (
-    <div className="container">
-      <h1>Sign in</h1>
-      <p style={{ opacity: 0.8 }}>Use your institution email (e.g. @sfu.ca).</p>
-      <form onSubmit={handleSubmit} className="card" style={{ maxWidth: 400 }}>
-        {error && <p style={{ color: "var(--toss-rust)" }}>{error}</p>}
-        <div style={{ marginBottom: "1rem" }}>
-          <label>Email</label>
-          <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@sfu.ca" required />
-        </div>
-        <div style={{ marginBottom: "1rem" }}>
-          <label>Password</label>
-          <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="(dev: ignored)" />
-        </div>
-        <button type="submit">Sign in</button>
-      </form>
-      <p style={{ marginTop: "1rem" }}>No account? <Link to="/signup">Sign up</Link></p>
+    <div className="account-landing">
+      <div className="account-landing__inner account-landing__inner--form">
+        <h1 className="account-landing__logo">TOSS</h1>
+        <p className="account-landing__tagline">Welcome back.</p>
+        <form onSubmit={handleSubmit} className="account-form">
+          {error && <p className="error-msg">{error}</p>}
+          <div className="form-group">
+            <label htmlFor="signin-email">Email</label>
+            <input id="signin-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@email.com" required autoComplete="email" />
+          </div>
+          <div className="form-group">
+            <label htmlFor="signin-password">Password</label>
+            <input id="signin-password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Password" autoComplete="current-password" />
+          </div>
+          <button type="submit" className="account-landing__btn account-landing__btn--primary" disabled={loading} style={{ width: "100%", marginTop: "0.5rem" }}>
+            {loading ? "Signing in…" : "Sign in"}
+          </button>
+        </form>
+        <p className="account-landing__hint">No account? <Link to="/signup">Sign up</Link></p>
+      </div>
     </div>
   );
 }

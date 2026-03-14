@@ -14,7 +14,7 @@ interface AuthContextType {
   token: string | null;
   loading: boolean;
   setToken: (t: string | null) => void;
-  refreshUser: () => Promise<void>;
+  refreshUser: (tokenOverride?: string | null) => Promise<boolean>;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -30,20 +30,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setTokenState(t);
   };
 
-  const refreshUser = async () => {
-    if (!token) {
+  const refreshUser = async (tokenOverride?: string | null): Promise<boolean> => {
+    const t = tokenOverride !== undefined ? tokenOverride : token;
+    if (!t) {
       setUser(null);
       setLoading(false);
-      return;
+      return false;
     }
     try {
-      const data = await api.getMe(token);
+      const data = await api.getMe(t);
       setUser(data.user);
-    } catch {
-      setUser(null);
-      setToken(null);
-    } finally {
       setLoading(false);
+      return true;
+    } catch (err: unknown) {
+      const status = (err as { status?: number })?.status;
+      setUser(null);
+      if (status === 401) setToken(null);
+      setLoading(false);
+      return false;
     }
   };
 
