@@ -1,70 +1,144 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams, useLocation } from "react-router-dom";
 import { useAuth } from "../auth";
 import { api } from "../api";
 
+const FALLBACK_CATEGORIES = [
+  { id: "1", name: "Board games", slug: "board-games" },
+  { id: "2", name: "Books", slug: "books" },
+  { id: "3", name: "Clothes & accessories", slug: "clothes-accessories" },
+  { id: "4", name: "Cleaning machines", slug: "cleaning-machines" },
+  { id: "5", name: "Maintenance devices", slug: "maintenance-devices" },
+  { id: "6", name: "Moving boxes", slug: "moving-boxes" },
+  { id: "7", name: "Costumes (Halloween & more)", slug: "costumes" },
+  { id: "8", name: "House decorations", slug: "house-decorations" },
+  { id: "9", name: "Furniture", slug: "furniture" },
+  { id: "10", name: "Kitchen", slug: "kitchen" },
+  { id: "11", name: "Tools", slug: "tools" },
+  { id: "12", name: "Electronics", slug: "electronics" },
+  { id: "13", name: "Sports", slug: "sports" },
+  { id: "14", name: "Other", slug: "other" },
+];
+
 export default function Browse() {
-  const { token } = useAuth();
+  const { token, user } = useAuth();
+  const location = useLocation();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const categoryFromUrl = searchParams.get("category") ?? "";
   const [items, setItems] = useState<{ id: string; title: string; category_name: string; owner_name: string; neighbourhood?: string }[]>([]);
-  const [categories, setCategories] = useState<{ id: string; name: string; slug: string }[]>([]);
-  const [filter, setFilter] = useState({ category: "", neighbourhood: "" });
+  const [categories, setCategories] = useState<{ id: string; name: string; slug: string }[]>(FALLBACK_CATEGORIES);
+  const [filter, setFilter] = useState({ category: categoryFromUrl, neighbourhood: "", seasonal: "" });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    if (!token) return;
-    api.getCategories().then((d) => setCategories(d.categories)).catch(() => {});
-  }, [token]);
+  const neighbourhoods = ["Burnaby", "Vancouver", "SFU Burnaby Campus", "Surrey", "Coquitlam", "New Westminster", ""];
 
   useEffect(() => {
-    if (!token) return;
+    setFilter((f) => ({ ...f, category: categoryFromUrl }));
+  }, [categoryFromUrl]);
+
+  useEffect(() => {
+    api.getCategories().then((d) => setCategories(d.categories || FALLBACK_CATEGORIES)).catch(() => {});
+  }, []);
+
+  useEffect(() => {
     setLoading(true);
+    setError("");
     api
-      .getItems(token, { category: filter.category || undefined, neighbourhood: filter.neighbourhood || undefined })
-      .then((d) => setItems(d.items))
-      .catch((e) => setError(e.message))
+      .getItems(token, {
+        category: filter.category || undefined,
+        neighbourhood: filter.neighbourhood || undefined,
+        seasonal: filter.seasonal || undefined,
+      })
+      .then((d) => {
+        const list = d && typeof d === "object" && "items" in d && Array.isArray((d as { items: unknown }).items)
+          ? (d as { items: { id: string; title: string; category_name: string; owner_name: string; neighbourhood?: string }[] }).items
+          : [];
+        setItems(list);
+      })
+      .catch((e) => {
+        setError(e.message || "Could not load items. Is the backend running on port 3012?");
+        setItems([]);
+      })
       .finally(() => setLoading(false));
-  }, [token, filter.category, filter.neighbourhood]);
+  }, [token, filter.category, filter.neighbourhood, filter.seasonal, location.key]);
 
-  if (loading && items.length === 0) return <div className="container">Loading…</div>;
-  if (error) return <div className="container"><p style={{ color: "var(--toss-rust)" }}>{error}</p></div>;
+  function setCategory(value: string) {
+    setFilter((f) => ({ ...f, category: value }));
+    const next = new URLSearchParams(searchParams);
+    if (value) next.set("category", value);
+    else next.delete("category");
+    setSearchParams(next);
+  }
+
+  const postFirst = error && /post.*before.*browsing/i.test(error);
 
   return (
     <div className="container">
       <h1>Browse</h1>
-      <p style={{ opacity: 0.8 }}>Post at least one item to browse. You can borrow as many items as you’ve posted.</p>
-      <div style={{ display: "flex", gap: "1rem", marginBottom: "1rem", flexWrap: "wrap" }}>
+      <p className="page-intro">Explore what’s available. Post an item first, then you can browse and request items from others.</p>
+      {postFirst && (
+        <div className="empty-state" style={{ marginTop: "1rem" }}>
+          <p><strong>Post at least one item before browsing.</strong></p>
+          <p>List something you’re willing to share — then you can see what others have and request items.</p>
+          <p><Link to="/post" className="btn">Post an item</Link></p>
+        </div>
+      )}
+      {error && !postFirst && <p className="error-msg">{error}</p>}
+      {loading && items.length === 0 && !error && !postFirst && <p>Loading…</p>}
+      {!postFirst && <div className="filter-bar">
         <select
           value={filter.category}
-          onChange={(e) => setFilter((f) => ({ ...f, category: e.target.value }))}
-          style={{ padding: "0.5rem", borderRadius: "0.5rem" }}
+          onChange={(e) => setCategory(e.target.value)}
+          aria-label="Category"
         >
           <option value="">All categories</option>
           {categories.map((c) => (
             <option key={c.id} value={c.slug}>{c.name}</option>
           ))}
         </select>
-        <input
-          type="text"
-          placeholder="Neighbourhood"
+        <select
           value={filter.neighbourhood}
           onChange={(e) => setFilter((f) => ({ ...f, neighbourhood: e.target.value }))}
-          style={{ maxWidth: 200 }}
-        />
-      </div>
-      <ul style={{ listStyle: "none", padding: 0, display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: "1rem" }}>
-        {items.map((item) => (
-          <li key={item.id}>
-            <Link to={`/item/${item.id}`} className="card" style={{ display: "block" }}>
-              <div style={{ aspectRatio: "16/10", background: "rgba(143,188,143,0.2)", borderRadius: "0.5rem", marginBottom: "0.5rem" }} />
-              <strong style={{ color: "var(--toss-green)" }}>{item.title}</strong>
-              <p style={{ margin: "0.25rem 0 0", fontSize: "0.875rem", opacity: 0.8 }}>{item.category_name} · {item.owner_name}</p>
-              {item.neighbourhood && <p style={{ margin: 0, fontSize: "0.75rem", opacity: 0.7 }}>{item.neighbourhood}</p>}
-            </Link>
-          </li>
-        ))}
-      </ul>
-      {items.length === 0 && <p>No items yet. Be the first to post one.</p>}
+          aria-label="Neighbourhood"
+        >
+          <option value="">All neighbourhoods</option>
+          {neighbourhoods.filter(Boolean).map((n) => (
+            <option key={n} value={n}>{n}</option>
+          ))}
+        </select>
+        <select
+          value={filter.seasonal}
+          onChange={(e) => setFilter((f) => ({ ...f, seasonal: e.target.value }))}
+          aria-label="Seasonal"
+        >
+          <option value="">Any time</option>
+          <option value="halloween">Halloween costumes</option>
+          <option value="moving">Moving boxes</option>
+          <option value="holiday">Holiday decorations</option>
+        </select>
+      </div>}
+      {!postFirst && (!loading || items.length > 0) && (
+        items.length === 0 ? (
+          <div className="empty-state">
+            <p>{error ? "Could not load items. Make sure the backend is running." : "No items match your filters yet."}</p>
+            <p><Link to="/post">Post an item</Link> to get the cycle going.</p>
+          </div>
+        ) : (
+          <ul className="card-list">
+            {items.map((item) => (
+              <li key={item.id}>
+                <Link to={`/item/${item.id}`} className="card">
+                  <div className="card__thumb" />
+                  <span className="card__title">{item.title}</span>
+                  <p className="card__meta">{item.category_name} · {item.owner_name}</p>
+                  {item.neighbourhood && <p className="card__meta card__meta--small">{item.neighbourhood}</p>}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        )
+      )}
     </div>
   );
 }

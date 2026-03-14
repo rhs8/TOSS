@@ -42,6 +42,8 @@ export interface Circulation {
   confirmed_at: string | null;
   exchanged_at: string | null;
   handoff_notes: string | null;
+  requester_availability: string | null;
+  meeting_spots: string | null;
 }
 
 export interface ItemHolder {

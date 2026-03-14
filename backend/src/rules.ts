@@ -37,10 +37,23 @@ export async function canRequestItem(userId: string): Promise<{ allowed: boolean
   if (counts.borrow_count >= counts.post_count) {
     return {
       allowed: false,
-      reason: `You can only borrow as many items as you've posted (${counts.post_count}). Post more to borrow more.`,
+      reason: `You can only receive as many items as you've posted (${counts.post_count}). Based on need, not value — post more to borrow more.`,
     };
   }
   return { allowed: true };
+}
+
+/** Minimum 1 post per month (rolling). If user hasn't posted in last 30 days, they should post before borrowing again. */
+export async function hasMinPostThisMonth(userId: string): Promise<{ ok: boolean; reason?: string }> {
+  const row = await queryOne<{ count: string }>(
+    `SELECT COUNT(*) AS count FROM items WHERE owner_id = $1 AND created_at > NOW() - INTERVAL '30 days'`,
+    [userId]
+  );
+  const count = parseInt(row?.count ?? "0", 10);
+  if (count < MIN_POSTS_PER_MONTH) {
+    return { ok: false, reason: "Minimum 1 post per month. Post an item to keep your account in good standing." };
+  }
+  return { ok: true };
 }
 
 /** Check user is not suspended or banned. */
