@@ -8,5 +8,14 @@
     "start:web": "cd web && npm run dev",
     "build:api": "cd backend && npm run build",
     "build:web": "cd web && npm run build"
+  },
+  "dependencies": {
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
+    "react-router-dom": "^6.30.3"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3"
   }
 }
