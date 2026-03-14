@@ -174,8 +174,9 @@ export default function Landing() {
       </section>
 
       <section className="landing__cta landing__cta--minimal">
-        <p className="landing__cta-text">Ready to be a part of the community?</p>
-        <Link to="/account" className="btn btn--minimal">Join TOSS</Link>
+        <p className="landing__cta-text">Create an account to get started. Post an item, then browse and request what you need.</p>
+        <Link to="/signup" className="btn btn--minimal">Create account</Link>
+        <p style={{ marginTop: "0.75rem", fontSize: "0.9rem", opacity: 0.9 }}>Already have an account? <Link to="/signin">Sign in</Link></p>
       </section>
     </div>
   );

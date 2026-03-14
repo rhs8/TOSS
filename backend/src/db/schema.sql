@@ -67,6 +67,8 @@ CREATE TABLE IF NOT EXISTS circulations (
   confirmed_at TIMESTAMPTZ,
   exchanged_at TIMESTAMPTZ,
   handoff_notes TEXT,
+  requester_availability TEXT,
+  meeting_spots TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   CONSTRAINT no_self_circulation CHECK (from_user_id != to_user_id)
 );
@@ -108,3 +110,7 @@ CREATE INDEX idx_circulations_to_user ON circulations(to_user_id);
 CREATE INDEX idx_item_holders_item ON item_holders(item_id);
 CREATE INDEX idx_users_email_domain ON users(email_domain);
 CREATE INDEX idx_users_banned ON users(banned) WHERE banned = FALSE;
+
+-- Optional: for existing DBs that had circulations before these columns existed
+ALTER TABLE circulations ADD COLUMN IF NOT EXISTS requester_availability TEXT;
+ALTER TABLE circulations ADD COLUMN IF NOT EXISTS meeting_spots TEXT;

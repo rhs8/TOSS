@@ -53,6 +53,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     refreshUser();
+    // If API never responds (wrong URL or backend down), stop loading so the app can render
+    const t = setTimeout(() => setLoading(false), 5000);
+    return () => clearTimeout(t);
   }, [token]);
 
   return (

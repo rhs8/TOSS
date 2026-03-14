@@ -21,7 +21,7 @@ const FALLBACK_CATEGORIES = [
 ];
 
 export default function Browse() {
-  const { token } = useAuth();
+  const { token, user } = useAuth();
   const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
   const categoryFromUrl = searchParams.get("category") ?? "";
@@ -50,9 +50,14 @@ export default function Browse() {
         neighbourhood: filter.neighbourhood || undefined,
         seasonal: filter.seasonal || undefined,
       })
-      .then((d) => setItems(d.items || []))
+      .then((d) => {
+        const list = d && typeof d === "object" && "items" in d && Array.isArray((d as { items: unknown }).items)
+          ? (d as { items: { id: string; title: string; category_name: string; owner_name: string; neighbourhood?: string }[] }).items
+          : [];
+        setItems(list);
+      })
       .catch((e) => {
-        setError(e.message || "Could not load items.");
+        setError(e.message || "Could not load items. Is the backend running on port 3012?");
         setItems([]);
       })
       .finally(() => setLoading(false));
@@ -66,13 +71,22 @@ export default function Browse() {
     setSearchParams(next);
   }
 
+  const postFirst = error && /post.*before.*browsing/i.test(error);
+
   return (
     <div className="container">
       <h1>Browse</h1>
-      <p className="page-intro">Explore what’s available. Sign in and post an item to request anything — or add to your wishlist so others can offer. You can have as many items passed along to you as you’ve posted.</p>
-      {error && <p className="error-msg">{error}</p>}
-      {loading && items.length === 0 && !error && <p>Loading…</p>}
-      <div className="filter-bar">
+      <p className="page-intro">Explore what’s available. Post an item first, then you can browse and request items from others.</p>
+      {postFirst && (
+        <div className="empty-state" style={{ marginTop: "1rem" }}>
+          <p><strong>Post at least one item before browsing.</strong></p>
+          <p>List something you’re willing to share — then you can see what others have and request items.</p>
+          <p><Link to="/post" className="btn">Post an item</Link></p>
+        </div>
+      )}
+      {error && !postFirst && <p className="error-msg">{error}</p>}
+      {loading && items.length === 0 && !error && !postFirst && <p>Loading…</p>}
+      {!postFirst && <div className="filter-bar">
         <select
           value={filter.category}
           onChange={(e) => setCategory(e.target.value)}
@@ -103,28 +117,28 @@ export default function Browse() {
           <option value="moving">Moving boxes</option>
           <option value="holiday">Holiday decorations</option>
         </select>
-      </div>
-      {!loading || items.length > 0 ? (
+      </div>}
+      {!postFirst && (!loading || items.length > 0) && (
         items.length === 0 ? (
           <div className="empty-state">
             <p>{error ? "Could not load items. Make sure the backend is running." : "No items match your filters yet."}</p>
-            <p><Link to="/account">Sign in</Link> to post an item and get the cycle going.</p>
+            <p><Link to="/post">Post an item</Link> to get the cycle going.</p>
           </div>
         ) : (
-        <ul className="card-list">
-          {items.map((item) => (
-            <li key={item.id}>
-              <Link to={`/item/${item.id}`} className="card">
-                <div className="card__thumb" />
-                <span className="card__title">{item.title}</span>
-                <p className="card__meta">{item.category_name} · {item.owner_name}</p>
-                {item.neighbourhood && <p className="card__meta card__meta--small">{item.neighbourhood}</p>}
-              </Link>
-            </li>
-          ))}
-        </ul>
+          <ul className="card-list">
+            {items.map((item) => (
+              <li key={item.id}>
+                <Link to={`/item/${item.id}`} className="card">
+                  <div className="card__thumb" />
+                  <span className="card__title">{item.title}</span>
+                  <p className="card__meta">{item.category_name} · {item.owner_name}</p>
+                  {item.neighbourhood && <p className="card__meta card__meta--small">{item.neighbourhood}</p>}
+                </Link>
+              </li>
+            ))}
+          </ul>
         )
-      ) : null}
+      )}
     </div>
   );
 }

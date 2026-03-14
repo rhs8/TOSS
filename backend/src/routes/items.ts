@@ -1,12 +1,12 @@
 import { Router } from "express";
 import { query, queryOne } from "../db";
 import { optionalAuth, requireAuth, type AuthRequest } from "../auth";
-import { canRequestItem, hasMinPostThisMonth, isAccessAllowed, isCommitmentValid } from "../rules";
+import { canBrowse, canRequestItem, hasMinPostThisMonth, isAccessAllowed, isCommitmentValid } from "../rules";
 import type { Item, Circulation } from "../types";
 
 const router = Router();
 
-/** List items (browse). Public — no auth required. Optional: category, neighbourhood, seasonal. When signed in, filter by user's circles. */
+/** List items (browse). All posted items with status 'live' are visible to everyone who can browse (no circle/owner filter). Optional: category, neighbourhood, seasonal. */
 router.get("/", optionalAuth, async (req: AuthRequest, res) => {
   const user = req.user;
   const category = req.query.category as string | undefined;
@@ -40,14 +40,9 @@ router.get("/", optionalAuth, async (req: AuthRequest, res) => {
   if (user) {
     const check = isAccessAllowed(user);
     if (!check.allowed) return res.status(403).json({ error: check.reason });
-    const userCircles = await query<{ circle_id: string }>("SELECT circle_id FROM user_circles WHERE user_id = $1", [user.id]);
-    if (userCircles.length > 0) {
-      sql += ` AND (i.circle_id IS NULL OR i.circle_id IN (${userCircles.map((_, i) => `$${n + i}`).join(",")}))`;
-      userCircles.forEach((c) => params.push(c.circle_id));
-      n += userCircles.length;
-    }
-  } else {
-    /* Not signed in: show all live items so anyone can browse. */
+    const browseOk = await canBrowse(user.id);
+    if (!browseOk.allowed) return res.status(403).json({ error: browseOk.reason });
+    /* Show all live items; category/neighbourhood/seasonal filters only. */
   }
   sql += " ORDER BY i.created_at DESC";
 
@@ -158,9 +153,10 @@ router.post("/:id/request", requireAuth, async (req: AuthRequest, res) => {
   );
   if (existing) return res.status(400).json({ error: "Item already requested." });
 
+  const { availability: requester_availability, meeting_spots } = req.body || {};
   const rows = await query<Circulation>(
-    `INSERT INTO circulations (item_id, from_user_id, to_user_id) VALUES ($1, $2, $3) RETURNING *`,
-    [item.id, item.owner_id, user.id]
+    `INSERT INTO circulations (item_id, from_user_id, to_user_id, requester_availability, meeting_spots) VALUES ($1, $2, $3, $4, $5) RETURNING *`,
+    [item.id, item.owner_id, user.id, requester_availability ?? null, meeting_spots ?? null]
   );
   await query("UPDATE items SET status = 'in_transit' WHERE id = $1", [item.id]);
   res.status(201).json({ circulation: rows[0] });

@@ -42,7 +42,7 @@ export default function PostItem() {
         neighbourhood: neighbourhood.trim() || undefined,
         seasonal_collection: seasonalCollection || undefined,
       });
-      navigate("/my-postings");
+      navigate("/browse");
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Failed to post.");
     } finally {

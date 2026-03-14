@@ -7,11 +7,6 @@
     "start:api": "cd backend && npm run dev",
     "start:web": "cd web && npm run dev",
     "build:api": "cd backend && npm run build",
-    "build:web": "cd web && npm run build",
-    "deploy:web": "cd web && npx vercel --prod",
-    "deploy:web:link": "cd web && npx vercel link"
-  },
-  "devDependencies": {
-    "vercel": "^37.0.0"
+    "build:web": "cd web && npm run build"
   }
 }

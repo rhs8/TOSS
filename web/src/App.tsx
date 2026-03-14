@@ -29,7 +29,7 @@ export default function App() {
         <Route path="account" element={<Account />} />
         <Route path="signin" element={<SignIn />} />
         <Route path="signup" element={<SignUp />} />
-        <Route path="browse" element={<Browse />} />
+        <Route path="browse" element={<Protected><Browse /></Protected>} />
         <Route path="post" element={<Protected><PostItem /></Protected>} />
         <Route path="my-postings" element={<Protected><MyPostings /></Protected>} />
         <Route path="item/:id" element={<ItemDetail />} />

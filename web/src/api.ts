@@ -1,4 +1,5 @@
-const BASE = import.meta.env.VITE_API_URL || "";
+// In dev use "" so /api goes through Vite proxy (see vite.config proxy target).
+const BASE = import.meta.env.DEV ? "" : (import.meta.env.VITE_API_URL || "");
 
 function headers(token?: string | null) {
   const h: Record<string, string> = { "Content-Type": "application/json" };
@@ -87,10 +88,11 @@ export const api = {
     if (!r.ok) throw new Error(errorMessage(r, text, data));
     return data;
   },
-  async requestItem(token: string, itemId: string) {
+  async requestItem(token: string, itemId: string, body?: { availability?: string; meeting_spots?: string }) {
     const r = await fetch(`${BASE}/api/items/${itemId}/request`, {
       method: "POST",
       headers: headers(token),
+      body: JSON.stringify(body ?? {}),
     });
     const { text, data } = await parseJson(r);
     if (!r.ok) throw new Error(errorMessage(r, text, data));
