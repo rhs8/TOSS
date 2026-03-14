@@ -1,0 +1,27 @@
+<%- include('partials/head') %>
+<%- include('partials/header', { active: 'post' }) %>
+<main>
+  <h1>Post an item</h1>
+  <p style="opacity: 0.8; margin-bottom: 1.5rem;">List something to get access to the exchange. Items must keep circulating.</p>
+  <% if (typeof query !== 'undefined' && query && query.error) { %>
+    <div class="alert alert-error"><%= query.error %></div>
+  <% } %>
+  <div class="card" style="max-width: 32rem;">
+    <form method="post" action="/post">
+      <div class="form-group">
+        <label for="title">Title *</label>
+        <input type="text" id="title" name="title" required placeholder="e.g. Electric sander">
+      </div>
+      <div class="form-group">
+        <label for="category">Category</label>
+        <input type="text" id="category" name="category" placeholder="e.g. tools, kitchen, furniture">
+      </div>
+      <div class="form-group">
+        <label for="description">Description</label>
+        <textarea id="description" name="description" rows="3" placeholder="Condition, how to use, etc."></textarea>
+      </div>
+      <button type="submit" class="btn-primary">Post item</button>
+    </form>
+  </div>
+</main>
+<%- include('partials/footer') %>

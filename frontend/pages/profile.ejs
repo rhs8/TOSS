@@ -1,0 +1,36 @@
+<%- include('partials/head') %>
+<%- include('partials/header', { active: 'profile' }) %>
+<main>
+  <h1>My commitment</h1>
+  <p style="opacity: 0.8; margin-bottom: 1.5rem;">Your 6-month commitment and card on file keep the community trustworthy.</p>
+  <div class="card profile-section">
+    <h2>Commitment period</h2>
+    <% if (!commitmentEnd || user.commitment_end === 0) { %>
+      <p>You haven't listed anything yet. Post an item to start your 6-month commitment.</p>
+    <% } else { %>
+      <p>Ends <%= commitmentEnd.toLocaleDateString() %>.</p>
+      <p style="font-weight: 500; margin-top: 0.25rem; color: <%= active ? 'var(--toss-green)' : 'var(--toss-rust)' %>;"><%= active ? 'Active' : 'Ended' %></p>
+    <% } %>
+  </div>
+  <div class="card profile-section">
+    <h2>Card on file</h2>
+    <p><%= user.card_on_file ? "Card on file. You'll be charged if you don't return a borrowed item." : "No card on file yet. Add one for reassurance—you'll only be charged if you don't return an item." %></p>
+    <button type="button" style="margin-top: 0.5rem; background: none; border: none; color: var(--toss-green); text-decoration: underline; cursor: pointer; font-size: 0.875rem;"><%= user.card_on_file ? 'Update card' : 'Add card (demo)' %></button>
+  </div>
+  <div class="card profile-section my-listings">
+    <h2>My listings (<%= listings.length %>)</h2>
+    <% if (listings.length === 0) { %>
+      <p>No items yet. <a href="/post">Post one</a>.</p>
+    <% } else { %>
+      <ul>
+        <% listings.forEach(function(l) { %>
+          <li>
+            <a href="/listing/<%= l.id %>"><%= l.title %></a>
+            <span class="badge <%= l.is_active ? 'available' : 'lent' %>"><%= l.is_active ? 'Available' : 'Lent out' %></span>
+          </li>
+        <% }); %>
+      </ul>
+    <% } %>
+  </div>
+</main>
+<%- include('partials/footer') %>

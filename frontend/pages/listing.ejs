@@ -1,0 +1,24 @@
+<%- include('partials/head') %>
+<%- include('partials/header') %>
+<main>
+  <div class="card listing-detail">
+    <% if (typeof query !== 'undefined' && query && query.error) { %>
+      <div class="alert alert-error"><%= query.error %></div>
+    <% } %>
+    <% if (typeof query !== 'undefined' && query && query.success) { %>
+      <div class="alert alert-success"><%= query.success %></div>
+    <% } %>
+    <div class="thumb"></div>
+    <h1><%= listing.title %></h1>
+    <% if (listing.category) { %><span class="category"><%= listing.category %></span><% } %>
+    <% if (listing.description) { %><p class="description"><%= listing.description %></p><% } %>
+    <% if (listing.owner_name) { %><p class="owner">Listed by <%= listing.owner_name %></p><% } %>
+    <div class="actions">
+      <form method="post" action="/request" style="display: inline;">
+        <input type="hidden" name="listingId" value="<%= listing.id %>">
+        <button type="submit" class="btn-primary">Request this item</button>
+      </form>
+    </div>
+  </div>
+</main>
+<%- include('partials/footer') %>

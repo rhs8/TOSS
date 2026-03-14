@@ -13,9 +13,9 @@ dist
 .env.local
 .env.*.local
 
-# prisma
-prisma/dev.db
-prisma/dev.db-journal
+# db
+toss.db
+toss.db-journal
 
 # debug
 npm-debug.log*

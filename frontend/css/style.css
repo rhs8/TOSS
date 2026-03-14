@@ -1,0 +1,380 @@
+:root {
+  --toss-green: #2D5A3D;
+  --toss-mint: #8FBC8F;
+  --toss-cream: #F5F5DC;
+  --toss-earth: #6B4423;
+  --toss-rust: #B7410E;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: system-ui, sans-serif;
+  background: var(--toss-cream);
+  color: var(--toss-earth);
+  display: flex;
+  flex-direction: column;
+}
+
+header {
+  border-bottom: 1px solid rgba(143, 188, 143, 0.5);
+  background: rgba(255, 255, 255, 0.9);
+  padding: 0.75rem 1rem;
+}
+
+header .wrap {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+header a.logo {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--toss-green);
+  text-decoration: none;
+}
+
+nav a {
+  margin-left: 0.25rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.5rem;
+  color: var(--toss-earth);
+  text-decoration: none;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+nav a:hover {
+  background: rgba(143, 188, 143, 0.3);
+}
+
+nav a.active {
+  background: rgba(143, 188, 143, 0.5);
+  color: var(--toss-green);
+}
+
+main {
+  flex: 1;
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+  padding: 1rem;
+}
+
+h1 {
+  font-size: 2rem;
+  color: var(--toss-green);
+  margin: 0 0 0.5rem;
+}
+
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--toss-green);
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  font-weight: 500;
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+.btn-primary:hover {
+  opacity: 0.9;
+}
+
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--toss-mint);
+  color: var(--toss-green);
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  font-weight: 500;
+  text-decoration: none;
+  border: 1px solid rgba(45, 90, 61, 0.3);
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+.btn-secondary:hover {
+  opacity: 0.9;
+}
+
+.card {
+  background: white;
+  border-radius: 0.75rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(143, 188, 143, 0.4);
+  padding: 1rem;
+}
+
+.hero {
+  text-align: center;
+  padding: 3rem 1rem;
+  max-width: 800px;
+  margin: 0 auto 3rem;
+}
+
+.hero h1 {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+}
+
+.hero p {
+  font-size: 1.125rem;
+  color: var(--toss-earth);
+  opacity: 0.9;
+  margin: 0 0 0.5rem;
+}
+
+.hero .buttons {
+  margin-top: 2rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: center;
+}
+
+.rules {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 3rem;
+}
+
+.rules .card {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.rules .icon {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 0.5rem;
+  background: rgba(143, 188, 143, 0.4);
+  flex-shrink: 0;
+}
+
+.rules h2 {
+  font-size: 1rem;
+  color: var(--toss-green);
+  margin: 0 0 0.25rem;
+}
+
+.rules p {
+  font-size: 0.875rem;
+  color: var(--toss-earth);
+  opacity: 0.8;
+  margin: 0;
+}
+
+input[type="text"],
+input[type="email"],
+textarea {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid rgba(143, 188, 143, 0.6);
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  margin-top: 0.25rem;
+}
+
+input:focus,
+textarea:focus {
+  outline: none;
+  border-color: var(--toss-green);
+  box-shadow: 0 0 0 2px rgba(45, 90, 61, 0.2);
+}
+
+label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  margin-bottom: 0.25rem;
+}
+
+.form-group {
+  margin-bottom: 1rem;
+}
+
+.listing-grid {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1rem;
+}
+
+.listing-grid li a {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+}
+
+.listing-grid li a:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.listing-grid .thumb {
+  aspect-ratio: 16/10;
+  background: rgba(143, 188, 143, 0.2);
+  border-radius: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.listing-grid h2 {
+  font-size: 1rem;
+  color: var(--toss-green);
+  margin: 0 0 0.25rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.listing-grid .category {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--toss-earth);
+  opacity: 0.6;
+}
+
+.listing-grid .owner {
+  font-size: 0.875rem;
+  color: var(--toss-earth);
+  opacity: 0.7;
+  margin-top: 0.25rem;
+}
+
+.alert {
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.alert-error {
+  background: rgba(183, 65, 14, 0.15);
+  color: var(--toss-rust);
+}
+
+.alert-success {
+  background: rgba(45, 90, 61, 0.15);
+  color: var(--toss-green);
+}
+
+.profile-section {
+  margin-bottom: 1.5rem;
+}
+
+.profile-section h2 {
+  font-size: 1rem;
+  color: var(--toss-green);
+  margin: 0 0 0.5rem;
+}
+
+.profile-section p {
+  font-size: 0.875rem;
+  margin: 0;
+  opacity: 0.85;
+}
+
+.listing-detail .thumb {
+  aspect-ratio: 16/10;
+  background: rgba(143, 188, 143, 0.2);
+  border-radius: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.listing-detail h1 {
+  font-size: 1.5rem;
+  margin-bottom: 0.25rem;
+}
+
+.listing-detail .category {
+  font-size: 0.875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--toss-earth);
+  opacity: 0.6;
+}
+
+.listing-detail .description {
+  margin-top: 0.75rem;
+  color: var(--toss-earth);
+  opacity: 0.9;
+}
+
+.listing-detail .owner {
+  margin-top: 0.75rem;
+  font-size: 0.875rem;
+  opacity: 0.7;
+}
+
+.listing-detail .actions {
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(143, 188, 143, 0.4);
+}
+
+.my-listings ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.my-listings li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0;
+  font-size: 0.875rem;
+}
+
+.my-listings a {
+  color: var(--toss-earth);
+  text-decoration: none;
+}
+
+.my-listings a:hover {
+  color: var(--toss-green);
+}
+
+.my-listings .badge {
+  font-size: 0.75rem;
+}
+
+.my-listings .badge.available {
+  color: var(--toss-green);
+}
+
+.my-listings .badge.lent {
+  color: var(--toss-earth);
+  opacity: 0.6;
+}
+
+.footer-note {
+  text-align: center;
+  font-size: 0.875rem;
+  color: var(--toss-earth);
+  opacity: 0.7;
+  margin-top: 2rem;
+}
+
+@media (min-width: 768px) {
+  .hero h1 {
+    font-size: 3.5rem;
+  }
+}

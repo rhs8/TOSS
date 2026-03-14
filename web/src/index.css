@@ -1,0 +1,76 @@
+:root {
+  --toss-green: #2d5a3d;
+  --toss-mint: #8fbc8f;
+  --toss-cream: #f5f5dc;
+  --toss-earth: #6b4423;
+  --toss-rust: #b7410e;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, sans-serif;
+  background: var(--toss-cream);
+  color: var(--toss-earth);
+  min-height: 100vh;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+a {
+  color: var(--toss-green);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+button,
+.btn {
+  background: var(--toss-green);
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+button:hover,
+.btn:hover {
+  opacity: 0.9;
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+input,
+textarea {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid rgba(143, 188, 143, 0.6);
+  border-radius: 0.5rem;
+  font-size: 1rem;
+}
+
+.card {
+  background: white;
+  border-radius: 0.75rem;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  border: 1px solid rgba(143, 188, 143, 0.4);
+  padding: 1rem;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1rem;
+}
