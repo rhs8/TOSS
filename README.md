@@ -2,7 +2,6 @@
 
 Money-free community exchange: **post an item to browse**. 1 post = 1 borrow. 3-month renewable commitment. Items circulate (never back to the same person). Item biography shows every holder. Institution email (e.g. @sfu.ca). Card on file (Stripe) for accountability; charged only if an item isn’t passed on.
 
----
 
 ## Tech stack
 
@@ -16,8 +15,6 @@ Money-free community exchange: **post an item to browse**. 1 post = 1 borrow. 3-
 | Moderation| Google Gemini API (optional) |
 | Maps      | Google Maps API (neighbourhoods) |
 | Deploy    | Frontend: **Vercel** · Backend: **Railway** |
-
----
 
 ## Project layout
 
@@ -44,8 +41,6 @@ TOSS/
 │
 └── README.md
 ```
-
----
 
 ## Where to edit each feature
 
@@ -75,8 +70,6 @@ Use this as a map: **feature → file(s) to edit**.
 | **Top navigation links** | `web/src/Layout.tsx` (nav and links). |
 | **Global styles** (colors, fonts, buttons) | `web/src/index.css` |
 
----
-
 ## Rules (backend `rules.ts`)
 
 - **Browse:** Allowed only if `post_count > 0`.
@@ -84,8 +77,6 @@ Use this as a map: **feature → file(s) to edit**.
 - **Commitment:** 3-month renewable; checked on post and request.
 - **Suspension:** User doesn’t pass item on within 30 days → 1st: 30-day suspension; 2nd: permanent ban + Stripe charge.
 - **Min 1 post per month:** Enforced by cron/job (see `flagStaleHolders`).
-
----
 
 ## Run locally
 
@@ -118,8 +109,6 @@ npm run dev               # http://localhost:5173
 
 Use **Sign up** with an email like `you@sfu.ca` (allowed domains in `ALLOWED_EMAIL_DOMAINS`). Dev mode uses a fake token; no Firebase yet.
 
----
-
 ## Deploy
 
 ### Backend (Railway)
@@ -134,8 +123,6 @@ Use **Sign up** with an email like `you@sfu.ca` (allowed domains in `ALLOWED_EMA
 1. Import repo → Root or set **Root Directory** to `web`.
 2. Build: `npm run build` · Output: `dist`.
 3. Env: `VITE_API_URL` = Railway API URL (e.g. `https://your-app.railway.app`).
-
----
 
 ## Integrations (how to wire them)
 
@@ -156,8 +143,6 @@ Use **Sign up** with an email like `you@sfu.ca` (allowed domains in `ALLOWED_EMA
 ### Google Maps (neighbourhoods)
 
 - **Frontend:** Load Maps JS API; geocode or use Places for neighbourhood/city; send `lat`, `lng`, `neighbourhood` when posting an item. Browse filters already support `neighbourhood` query param.
-
----
 
 ## Old simple stack (EJS + SQLite)
 
