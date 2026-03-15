@@ -20,12 +20,46 @@ const FALLBACK_CATEGORIES = [
   { id: "14", name: "Other", slug: "other" },
 ];
 
+const CATEGORY_ICONS: Record<string, string> = {
+  "board-games": "🎲",
+  "books": "📚",
+  "clothes-accessories": "👕",
+  "cleaning-machines": "🧹",
+  "maintenance-devices": "🔧",
+  "moving-boxes": "📦",
+  "costumes": "🎃",
+  "house-decorations": "💡",
+  "furniture": "🪑",
+  "kitchen": "🥣",
+  "tools": "🔧",
+  "electronics": "🔌",
+  "sports": "⚽",
+  "other": "📦",
+};
+
+function categoryIcon(categoryName: string): string {
+  const slug = categoryName
+    .replace(/\([^)]*\)/g, "")
+    .trim()
+    .toLowerCase()
+    .replace(/\s*&\s*/g, "-")
+    .replace(/\s+/g, "-")
+    .replace(/[^a-z0-9-]/g, "");
+  return CATEGORY_ICONS[slug] ?? "📦";
+}
+
+function formatListedDate(createdAt?: string): string {
+  if (!createdAt) return "";
+  const d = new Date(createdAt);
+  return d.toLocaleDateString("en-US", { month: "short", year: "numeric" });
+}
+
 export default function Browse() {
   const { token, user } = useAuth();
   const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
   const categoryFromUrl = searchParams.get("category") ?? "";
-  const [items, setItems] = useState<{ id: string; title: string; category_name: string; owner_name: string; neighbourhood?: string }[]>([]);
+  const [items, setItems] = useState<{ id: string; title: string; category_name: string; owner_name: string; neighbourhood?: string; created_at?: string }[]>([]);
   const [categories, setCategories] = useState<{ id: string; name: string; slug: string }[]>(FALLBACK_CATEGORIES);
   const [filter, setFilter] = useState({ category: categoryFromUrl, neighbourhood: "", seasonal: "" });
   const [error, setError] = useState("");
@@ -52,7 +86,7 @@ export default function Browse() {
       })
       .then((d) => {
         const list = d && typeof d === "object" && "items" in d && Array.isArray((d as { items: unknown }).items)
-          ? (d as { items: { id: string; title: string; category_name: string; owner_name: string; neighbourhood?: string }[] }).items
+          ? (d as { items: { id: string; title: string; category_name: string; owner_name: string; neighbourhood?: string; created_at?: string }[] }).items
           : [];
         setItems(list);
       })
@@ -71,22 +105,13 @@ export default function Browse() {
     setSearchParams(next);
   }
 
-  const postFirst = error && /post.*before.*browsing/i.test(error);
-
   return (
     <div className="container">
       <h1>Browse</h1>
-      <p className="page-intro">Explore what’s available. Post an item first, then you can browse and request items from others.</p>
-      {postFirst && (
-        <div className="empty-state" style={{ marginTop: "1rem" }}>
-          <p><strong>Post at least one item before browsing.</strong></p>
-          <p>List something you’re willing to share — then you can see what others have and request items.</p>
-          <p><Link to="/post" className="btn">Post an item</Link></p>
-        </div>
-      )}
-      {error && !postFirst && <p className="error-msg">{error}</p>}
-      {loading && items.length === 0 && !error && !postFirst && <p>Loading…</p>}
-      {!postFirst && <div className="filter-bar">
+      <p className="page-intro">All posted items appear here so others can see and request them. You can request an item after you’ve posted at least one of your own.</p>
+      {error && <p className="error-msg">{error}</p>}
+      {loading && items.length === 0 && !error && <p>Loading…</p>}
+      <div className="filter-bar">
         <select
           value={filter.category}
           onChange={(e) => setCategory(e.target.value)}
@@ -117,26 +142,41 @@ export default function Browse() {
           <option value="moving">Moving boxes</option>
           <option value="holiday">Holiday decorations</option>
         </select>
-      </div>}
-      {!postFirst && (!loading || items.length > 0) && (
+      </div>
+      {(!loading || items.length > 0) && (
         items.length === 0 ? (
           <div className="empty-state">
             <p>{error ? "Could not load items. Make sure the backend is running." : "No items match your filters yet."}</p>
             <p><Link to="/post">Post an item</Link> to get the cycle going.</p>
           </div>
         ) : (
-          <ul className="card-list">
+          <div className="browse-cards" aria-label="Items available to request">
             {items.map((item) => (
-              <li key={item.id}>
-                <Link to={`/item/${item.id}`} className="card">
-                  <div className="card__thumb" />
-                  <span className="card__title">{item.title}</span>
-                  <p className="card__meta">{item.category_name} · {item.owner_name}</p>
-                  {item.neighbourhood && <p className="card__meta card__meta--small">{item.neighbourhood}</p>}
-                </Link>
-              </li>
+              <Link key={item.id} to={`/item/${item.id}`} className="bio-card bio-card--employee">
+                <div className="bio-card__image">
+                  <span className="bio-card__icon" aria-hidden>{categoryIcon(item.category_name)}</span>
+                </div>
+                <div className="bio-card__body">
+                  <h3 className="bio-card__name">{item.title}</h3>
+                  <dl className="bio-card__meta">
+                    <dt>Category</dt>
+                    <dd>{item.category_name}</dd>
+                    <dt>Owner</dt>
+                    <dd>{item.owner_name}</dd>
+                    <dt>Listed</dt>
+                    <dd>{formatListedDate(item.created_at)}</dd>
+                  </dl>
+                  <div className="bio-card__history">
+                    <span className="bio-card__history-title">Current holder</span>
+                    <ul className="bio-card__history-list">
+                      <li><strong>{item.owner_name}</strong></li>
+                    </ul>
+                  </div>
+                  {item.neighbourhood && <p className="bio-card__homes" style={{ marginTop: "0.35rem" }}>{item.neighbourhood}</p>}
+                </div>
+              </Link>
             ))}
-          </ul>
+          </div>
         )
       )}
     </div>

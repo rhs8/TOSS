@@ -88,6 +88,15 @@ export const api = {
     if (!r.ok) throw new Error(errorMessage(r, text, data));
     return data;
   },
+  async deleteItem(token: string, itemId: string) {
+    const r = await fetch(`${BASE}/api/items/${itemId}`, {
+      method: "DELETE",
+      headers: headers(token),
+    });
+    const { text, data } = await parseJson(r);
+    if (!r.ok) throw new Error(errorMessage(r, text, data));
+    return data;
+  },
   async requestItem(token: string, itemId: string, body?: { availability?: string; meeting_spots?: string }) {
     const r = await fetch(`${BASE}/api/items/${itemId}/request`, {
       method: "POST",

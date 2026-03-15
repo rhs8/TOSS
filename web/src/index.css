@@ -57,6 +57,15 @@ button:disabled {
   cursor: not-allowed;
 }
 
+.btn--danger {
+  background: #b91c1c;
+  color: white;
+}
+
+.btn--danger:hover:not(:disabled) {
+  background: #991b1b;
+}
+
 input,
 textarea {
   width: 100%;
@@ -1013,6 +1022,128 @@ main {
 .card-list .card .card__meta--small {
   font-size: 0.75rem;
   opacity: 0.7;
+}
+
+.card-list__item-with-actions {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.card-list__item-with-actions .card {
+  flex: 1;
+  min-width: 0;
+}
+
+.card-list__item-with-actions .btn {
+  flex-shrink: 0;
+}
+
+/* Browse: bio cards grid (same style as homepage) */
+.browse-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 1.25rem;
+  margin-top: 1rem;
+}
+
+.browse-cards .bio-card {
+  flex: none;
+  scroll-snap-align: unset;
+  text-decoration: none;
+  color: inherit;
+}
+
+.browse-cards .bio-card:hover {
+  text-decoration: none;
+}
+
+/* Request modal (popup) */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+
+.modal {
+  background: var(--toss-bg);
+  border-radius: 0.75rem;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  max-width: 440px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--toss-border);
+}
+
+.modal__header h2 {
+  margin: 0;
+  font-size: 1.125rem;
+  color: var(--toss-text);
+}
+
+.modal__close {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  line-height: 1;
+  padding: 0.25rem;
+  cursor: pointer;
+  color: var(--toss-text-soft);
+}
+
+.modal__close:hover {
+  color: var(--toss-text);
+}
+
+.modal__body {
+  padding: 1.25rem;
+}
+
+.modal__intro {
+  font-size: 0.875rem;
+  color: var(--toss-text-soft);
+  margin: 0 0 1rem;
+  line-height: 1.4;
+}
+
+.modal__body .form-group {
+  margin-bottom: 1rem;
+}
+
+.modal__body .form-group label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.modal__body textarea {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--toss-border);
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  resize: vertical;
+}
+
+.modal__actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1.25rem;
 }
 
 /* Empty state */

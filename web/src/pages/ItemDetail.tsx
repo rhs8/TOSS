@@ -25,6 +25,7 @@ export default function ItemDetail() {
     e?.preventDefault();
     if (!token || !id) return;
     setRequesting(true);
+    setError("");
     try {
       await api.requestItem(token, id, {
         availability: availability.trim() || undefined,
@@ -34,11 +35,16 @@ export default function ItemDetail() {
       setShowRequestForm(false);
       setAvailability("");
       setMeetingSpots("");
-    } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : "Request failed.");
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Request failed.");
     } finally {
       setRequesting(false);
     }
+  }
+
+  function openRequestModal() {
+    setError("");
+    setShowRequestForm(true);
   }
 
   if (error && !data) return <div className="container"><p className="error-msg">{error}</p><Link to="/browse">Back to Browse</Link></div>;
@@ -61,58 +67,61 @@ export default function ItemDetail() {
         <p style={{ marginTop: "0.5rem", fontSize: "0.875rem", opacity: 0.85 }}>Status: {item.status}</p>
         {canRequest && (
           <div style={{ marginTop: "1rem" }}>
-            {!showRequestForm ? (
-              <>
-                <p style={{ fontSize: "0.875rem", opacity: 0.85, marginBottom: "0.75rem" }}>
-                  After you request, you and the current holder will connect. You’ll be asked for your availability and preferred meeting spots.
-                </p>
-                <button type="button" onClick={() => setShowRequestForm(true)}>
-                  Request this item
-                </button>
-              </>
-            ) : (
-              <form onSubmit={handleRequest} className="request-form" style={{ marginTop: "0.5rem" }}>
-                <p style={{ fontSize: "0.875rem", opacity: 0.85, marginBottom: "0.75rem" }}>
-                  Share when you’re available and where you could meet so the owner can arrange the handoff.
-                </p>
-                <div className="form-group">
-                  <label htmlFor="request-availability">Days and times you’re available</label>
-                  <textarea
-                    id="request-availability"
-                    value={availability}
-                    onChange={(e) => setAvailability(e.target.value)}
-                    placeholder="e.g. Weekdays after 5pm, weekends mornings"
-                    rows={2}
-                    style={{ width: "100%", padding: "0.5rem", marginTop: "0.25rem" }}
-                  />
-                </div>
-                <div className="form-group">
-                  <label htmlFor="request-spots">Potential meeting spots</label>
-                  <textarea
-                    id="request-spots"
-                    value={meetingSpots}
-                    onChange={(e) => setMeetingSpots(e.target.value)}
-                    placeholder="e.g. SFU Burnaby library entrance, Metrotown food court"
-                    rows={2}
-                    style={{ width: "100%", padding: "0.5rem", marginTop: "0.25rem" }}
-                  />
-                </div>
-                <div style={{ display: "flex", gap: "0.5rem", marginTop: "0.75rem" }}>
-                  <button type="submit" disabled={requesting}>
-                    {requesting ? "Submitting…" : "Submit request"}
-                  </button>
-                  <button type="button" onClick={() => { setShowRequestForm(false); setError(""); }} className="btn btn--secondary">
-                    Cancel
-                  </button>
-                </div>
-              </form>
-            )}
+            <p style={{ fontSize: "0.875rem", opacity: 0.85, marginBottom: "0.75rem" }}>
+              After you request, you and the current holder will connect. You’ll enter your availability and meeting spots in a popup.
+            </p>
+            <button type="button" onClick={openRequestModal}>
+              Request this item
+            </button>
           </div>
         )}
+
+      {canRequest && showRequestForm && (
+        <div className="modal-overlay" onClick={() => { setShowRequestForm(false); setError(""); }} aria-hidden="true">
+          <div className="modal" onClick={(e) => e.stopPropagation()} role="dialog" aria-labelledby="request-modal-title" aria-modal="true">
+            <div className="modal__header">
+              <h2 id="request-modal-title">Request: {item.title}</h2>
+              <button type="button" className="modal__close" onClick={() => { setShowRequestForm(false); setError(""); }} aria-label="Close">×</button>
+            </div>
+            <form onSubmit={handleRequest} className="modal__body">
+              <p className="modal__intro">Enter dates and times that work for you for a meet-up, and preferred locations. The owner will use this to arrange the handoff.</p>
+              <div className="form-group">
+                <label htmlFor="request-availability">Dates and times that work for you</label>
+                <textarea
+                  id="request-availability"
+                  value={availability}
+                  onChange={(e) => setAvailability(e.target.value)}
+                  placeholder="e.g. Weekdays after 5pm, Saturday mornings, March 15-20 any time"
+                  rows={3}
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="request-spots">Preferred meeting locations</label>
+                <textarea
+                  id="request-spots"
+                  value={meetingSpots}
+                  onChange={(e) => setMeetingSpots(e.target.value)}
+                  placeholder="e.g. SFU Burnaby library entrance, Metrotown food court"
+                  rows={2}
+                />
+              </div>
+              {error && <p className="error-msg" style={{ marginTop: "0.5rem" }}>{error}</p>}
+              <div className="modal__actions">
+                <button type="submit" disabled={requesting}>
+                  {requesting ? "Submitting…" : "Submit request"}
+                </button>
+                <button type="button" onClick={() => { setShowRequestForm(false); setError(""); }} className="btn btn--secondary">
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
         {!token && isLive && !isOwn && (
           <div style={{ marginTop: "1rem" }}>
             <p style={{ fontSize: "0.875rem", opacity: 0.85, marginBottom: "0.75rem" }}>
-              Sign in to request this item. To have it passed along to you, post something first — you can have as many items passed along as you’ve posted.
+              Sign in to request this item. To have it passed along to you, post something first; you can have as many items passed along as you’ve posted.
             </p>
             <Link to="/account" className="btn">Sign in to request</Link>
           </div>
@@ -120,7 +129,7 @@ export default function ItemDetail() {
       </div>
       <div className="card" style={{ marginTop: "1.5rem" }}>
         <h2 className="section-heading">Item biography</h2>
-        <p style={{ fontSize: "0.875rem", opacity: 0.8, margin: "0 0 0.75rem" }}>Everyone who has held this item — builds trust and backstory.</p>
+        <p style={{ fontSize: "0.875rem", opacity: 0.8, margin: "0 0 0.75rem" }}>Everyone who has held this item: builds trust and backstory.</p>
         <ul className="bio-list">
           {biography.map((h, i) => (
             <li key={i}>

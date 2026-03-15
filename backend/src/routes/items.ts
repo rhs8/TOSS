@@ -1,18 +1,24 @@
 import { Router } from "express";
 import { query, queryOne } from "../db";
 import { optionalAuth, requireAuth, type AuthRequest } from "../auth";
-import { canBrowse, canRequestItem, hasMinPostThisMonth, isAccessAllowed, isCommitmentValid } from "../rules";
+import { canRequestItem, hasMinPostThisMonth, isAccessAllowed, isCommitmentValid } from "../rules";
 import type { Item, Circulation } from "../types";
 
 const router = Router();
 
-/** List items (browse). All posted items with status 'live' are visible to everyone who can browse (no circle/owner filter). Optional: category, neighbourhood, seasonal. */
+/** List items (browse). Same items table as GET /mine (my postings); here we return every item with status 'live' so anything you post (and see in My postings) is findable here by other users. No owner filter. Optional: category, neighbourhood, seasonal. */
 router.get("/", optionalAuth, async (req: AuthRequest, res) => {
   const user = req.user;
   const category = req.query.category as string | undefined;
   const neighbourhood = req.query.neighbourhood as string | undefined;
   const seasonal = req.query.seasonal as string | undefined;
 
+  if (user) {
+    const check = isAccessAllowed(user);
+    if (!check.allowed) return res.status(403).json({ error: check.reason });
+  }
+
+  /* Same items table as /mine; status = 'live' means available for others to request */
   let sql = `
     SELECT i.*, cat.name AS category_name, u.display_name AS owner_name
     FROM items i
@@ -36,13 +42,6 @@ router.get("/", optionalAuth, async (req: AuthRequest, res) => {
     sql += ` AND i.seasonal_collection = $${n}`;
     params.push(seasonal);
     n++;
-  }
-  if (user) {
-    const check = isAccessAllowed(user);
-    if (!check.allowed) return res.status(403).json({ error: check.reason });
-    const browseOk = await canBrowse(user.id);
-    if (!browseOk.allowed) return res.status(403).json({ error: browseOk.reason });
-    /* Show all live items; category/neighbourhood/seasonal filters only. */
   }
   sql += " ORDER BY i.created_at DESC";
 
@@ -100,7 +99,7 @@ router.post("/", requireAuth, async (req: AuthRequest, res) => {
     return res.status(400).json({ error: "Title and category required." });
   }
 
-  // In development or when SKIP_MODERATION is set, new items go live immediately so they show in Browse.
+  /* New items go live immediately so they appear in both My postings and Browse for others to find. */
   const skipMod = process.env.SKIP_MODERATION?.toLowerCase();
   const status =
     process.env.NODE_ENV === "development" || skipMod === "1" || skipMod === "true"
@@ -130,6 +129,16 @@ router.post("/", requireAuth, async (req: AuthRequest, res) => {
     [item.id, user.id]
   );
   res.status(201).json({ item });
+});
+
+/** Delete own posting. Only owner can delete; removes the item from the database (and related circulations/holders via CASCADE). */
+router.delete("/:id", requireAuth, async (req: AuthRequest, res) => {
+  const user = req.user!;
+  const item = await queryOne<Item>("SELECT id, owner_id FROM items WHERE id = $1", [req.params.id]);
+  if (!item) return res.status(404).json({ error: "Item not found." });
+  if (item.owner_id !== user.id) return res.status(403).json({ error: "You can only delete your own items." });
+  await query("DELETE FROM items WHERE id = $1 AND owner_id = $2", [req.params.id, user.id]);
+  res.status(200).json({ ok: true });
 });
 
 /** Request to receive an item (creates circulation, owner must confirm). */

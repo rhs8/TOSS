@@ -1,6 +1,6 @@
-# Toss — Community Exchange Platform
+# Toss Community Exchange Platform
 
-Money-free community exchange: **post an item to browse**. 1 post = 1 borrow. 3-month renewable commitment. Items circulate (never back to the same person). Item biography shows every holder. Institution email (e.g. @sfu.ca). Card on file (Stripe) for accountability — charged only if an item isn’t passed on.
+Money-free community exchange: **post an item to browse**. 1 post = 1 borrow. 3-month renewable commitment. Items circulate (never back to the same person). Item biography shows every holder. Institution email (e.g. @sfu.ca). Card on file (Stripe) for accountability; charged only if an item isn’t passed on.
 
 ---
 

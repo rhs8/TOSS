@@ -16,7 +16,7 @@ Data is lost when the process exits. For persistent data, use PostgreSQL (see be
 
 ## Optional: PostgreSQL (persistent data)
 
-### Option A – Docker
+### Option A: Docker
 
 ```bash
 cd backend
@@ -30,7 +30,7 @@ npm run db:init
 npm run dev
 ```
 
-### Option B – Homebrew (macOS)
+### Option B: Homebrew (macOS)
 
 ```bash
 brew install postgresql@16

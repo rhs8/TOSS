@@ -37,7 +37,7 @@ export async function canRequestItem(userId: string): Promise<{ allowed: boolean
   if (counts.borrow_count >= counts.post_count) {
     return {
       allowed: false,
-      reason: `You can only receive as many items as you've posted (${counts.post_count}). Based on need, not value — post more to borrow more.`,
+      reason: `You can only receive as many items as you've posted (${counts.post_count}). Based on need, not value; post more to borrow more.`,
     };
   }
   return { allowed: true };

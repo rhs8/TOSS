@@ -40,7 +40,7 @@ export default function Wishlist() {
       {wishlists.length === 0 ? (
         <div className="empty-state">
           <p>No wishlist items yet.</p>
-          <p>Add something you need — others can see it and post when they have it.</p>
+          <p>Add something you need; others can see it and post when they have it.</p>
         </div>
       ) : (
         <ul style={{ listStyle: "none", padding: 0 }}>
